@@ -86,7 +86,7 @@ public class TestbankofficerController {
 	@Test
 	public void testdeleteLoan() throws Exception {
 
-		mockmvc.perform(MockMvcRequestBuilders.get("/oxbank/delete")).andExpect(status().is(405));
+		mockmvc.perform(MockMvcRequestBuilders.delete("/oxbank/delete?loanId=1&employeeId=101")).andExpect(status().is(200));
 
 	}
 
