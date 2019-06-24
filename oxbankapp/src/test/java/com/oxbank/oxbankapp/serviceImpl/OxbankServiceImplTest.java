@@ -38,19 +38,9 @@ public class OxbankServiceImplTest {
 	@Mock
 	ILoanRepository iLoanRepository;
 
-	Loan loan;
-	Bankofficer bankOfficer;
-	Customer customer;
-
-	@Before
-	public void setUp() {
-		loan = getLoan();
-		bankOfficer = getBankOfficerDetails();
-		customer = getCustomer();
-	}
-
 	@Test
 	public void createLoanImplTest() {
+		Loan loan = getLoan();
 		Mockito.when(iLoanRepository.save(loan)).thenReturn(loan);
 		ResponseDto actualResponse = oxbankServiceImpl.createLoan(loan);
 		Assert.assertEquals("Loan created for customer sucessfully", actualResponse.getMessage());
@@ -59,6 +49,10 @@ public class OxbankServiceImplTest {
 
 	@Test
 	public void approveLoanTest() {
+		Loan loan = getLoan();
+		Bankofficer bankOfficer = getBankOfficerDetails();
+		Customer customer = getCustomer();
+
 		Mockito.when(iLoanRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(loan));
 		Mockito.when(iCustomerRepository.getOne(Mockito.anyLong())).thenReturn(customer);
 		Mockito.when(iBankOfficer.findById(Mockito.anyLong())).thenReturn(Optional.of(bankOfficer));
@@ -68,8 +62,26 @@ public class OxbankServiceImplTest {
 
 	}
 
+	@Test(expected = OXBankingException.class)
+	public void approveLoan_1Test() {
+		Loan loan = getLoan();
+		Bankofficer bankOfficer = getBankOfficerDetails();
+		Customer customer = getCustomer();
+
+		customer.setCreditSccore(600L);
+		Mockito.when(iLoanRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(loan));
+		Mockito.when(iCustomerRepository.getOne(Mockito.anyLong())).thenReturn(customer);
+		Mockito.when(iBankOfficer.findById(Mockito.anyLong())).thenReturn(Optional.of(bankOfficer));
+		// Mockito.when(iLoanRepository.save(loan)).thenReturn(loan);
+		oxbankServiceImpl.approveLoan(loan.getLoanId(), bankOfficer.getEmployeeId());
+
+	}
+
 	@Test
 	public void deleteLoanTest() {
+		Loan loan = getLoan();
+		Bankofficer bankOfficer = getBankOfficerDetails();
+
 		bankOfficer.setLevel("Manager");
 		Mockito.when(iLoanRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(loan));
 		Mockito.when(iBankOfficer.findById(Mockito.anyLong())).thenReturn(Optional.of(bankOfficer));
@@ -79,6 +91,8 @@ public class OxbankServiceImplTest {
 
 	@Test(expected = OXBankingException.class)
 	public void deleteLoan_1Test() {
+		Loan loan = getLoan();
+		Bankofficer bankOfficer = getBankOfficerDetails();
 		bankOfficer.setLevel("Officer");
 		Mockito.when(iBankOfficer.findById(Mockito.anyLong())).thenReturn(Optional.of(bankOfficer));
 		oxbankServiceImpl.deleteLoan(loan.getLoanId(), bankOfficer.getEmployeeId());
